@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define MAX_TREE_NODES 256
+#define MAX_CODE_LENGTH 256
 
 typedef struct Node {
     char character;
@@ -79,7 +80,7 @@ void buildHuffmanTree(PriorityQueue *pq) {
     }
 }
 
-void generateCodes(Node *root, char *code, int depth, char codes[MAX_TREE_NODES][MAX_TREE_NODES]) {
+void generateCodes(Node *root, char *code, int depth, char codes[MAX_TREE_NODES][MAX_CODE_LENGTH]) {
     if (root->left) {
         code[depth] = '0';
         generateCodes(root->left, code, depth + 1, codes);
@@ -116,8 +117,8 @@ void compressFile(const char *inputFile, const char *outputFile) {
     }
 
     buildHuffmanTree(&pq);
-    char codes[MAX_TREE_NODES][MAX_TREE_NODES] = {0};
-    char code[MAX_TREE_NODES];
+    char codes[MAX_TREE_NODES][MAX_CODE_LENGTH] = {0};
+    char code[MAX_CODE_LENGTH];
     generateCodes(pq.nodes[0], code, 0, codes);
 
     file = fopen(inputFile, "r");
@@ -128,10 +129,28 @@ void compressFile(const char *inputFile, const char *outputFile) {
     }
 
     // Write the compressed data to the output file
+    unsigned char byte = 0;
+    int bitCount = 0;
+
     while ((ch = fgetc(file)) != EOF) {
-        fputs(codes[(unsigned char)ch], outFile);
+        const char *code = codes[(unsigned char)ch];
+        for (int i = 0; code[i]; i++) {
+            if (bitCount == 8) {
+                fwrite(&byte, sizeof(byte), 1, outFile);
+                byte = 0;
+                bitCount = 0;
+            }
+            byte = (byte << 1) | (code[i] - '0'); // Add the bit (0 or 1)
+            bitCount++;
+        }
     }
-    
+
+    // Write remaining bits
+    if (bitCount > 0) {
+        byte <<= (8 - bitCount); // Shift to fill the last byte
+        fwrite(&byte, sizeof(byte), 1, outFile);
+    }
+
     fclose(file);
     fclose(outFile);
 }
@@ -140,4 +159,3 @@ int main() {
     compressFile("input.txt", "output.bin");
     return 0;
 }
-
