@@ -128,4 +128,7 @@ int main() {
 
 ### Summary
 
-- The code efficiently compresses a text file using Huffman coding by creating a tree based on character frequencies, generating unique binary codes for each character, and writing the compressed data as a binary file. It's a good demonstration of data structures like trees and priority queues in C, as well as file I/O and bit manipulation.
+- The code efficiently compresses a text file using Huffman coding by creating a tree based on character frequencies, generating unique binary codes for each character, and writing the compressed data as a binary file.
+
+
+![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
